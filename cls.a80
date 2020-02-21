@@ -1,0 +1,12 @@
+	module cls
+CLS     
+        xor  a
+        out  (254),a
+		ld	hl, 5AFFh
+		ld	de, 5AFEh
+		ld	bc, 1AFFh
+		ld	(hl), a
+		lddr			; Clear	videoram (black	screen)
+		ret
+        
+	endmodule

@@ -1,0 +1,167 @@
+//LMN128-Jan Kucera-Zlin/CZ
+//added OR Flag
+//Original by BusySoft
+	MODULE txy32
+txy	 	 ld   a,(hl)
+         and  127
+/*         cp   13
+         jr   z,T42_ZMEN */
+         cp   16
+         jr	  z,colorchange
+         push hl
+         call xy
+         pop  hl
+/*         ld   a,(T42_BORE)
+         dec  a
+         cp   c
+         jr   c,T42_ZMEN
+         inc  c */
+T32_BACK ld   a,(hl)
+         rla
+         ret  c
+         inc  hl
+         jr   txy
+
+colorchange
+			inc hl
+			ld a,(hl)
+			ld (T32_ATT),a
+			jr T32_BACK	
+T32_ATT		defb 0	
+
+xy	and	a
+	ret	z
+	exx
+	ld	bc,(cursor)
+xy8	ld	de,bios.txy51.znaky
+	ld	h,#00
+	ld	l,a
+	add	hl,hl
+	add	hl,hl
+	add	hl,hl
+	add	hl,de
+	push hl
+	pop	iy
+	ld	xh,#08
+xy8dd	ld	a,b
+	cp	#c0
+	jr	nc,xyend
+;	call	#22b1
+
+	and a
+	rra
+	scf
+	rra
+	and a
+	rra
+	xor b
+	and 248
+	xor b
+	ld h,a
+	ld a,c
+	rlca
+	rlca
+	rlca
+	xor b
+	and 199
+	xor b
+	rlca
+	rlca
+	ld l,a
+	ld a,c
+	and 07
+
+	ld	d,(iy+#00)
+//	ld	e,#00
+	jr	z,xy8bbnew 		//kulata pozice, staci vypsat jen jeden atribut
+	ld e,0
+xy8cc rr	d
+	rr	e
+	dec	a
+	jr	nz,xy8cc   
+xy8bb
+	ld a,(orflag)
+	and a
+	ld a,d
+	jr nz,1F
+	or	(hl)
+1	ld	(hl),a
+    call T32_COLOR
+	inc	hl
+	ld a,(orflag)
+	and a
+	ld a,e
+	jr nz,2F
+	or	(hl)				
+2	ld	(hl),a
+    call T32_COLOR
+3	inc	b
+	inc	iy
+	dec	xh
+//    call T32_COLOR
+	jp	nz,xy8dd
+//	call T32_COLOR
+xyend	ld	ix,flag0
+	ld	a,(ix+#04)
+	add	a,8
+	ld	(ix+#04),a
+	cp	256-7
+	jr	c,xystop
+	ld	(ix+#04),2
+	ld	a,(ix+#05)
+	add	a,8
+	ld	(ix+#05),a
+xystop	exx
+	ret
+xy8bbnew
+	ld a,(orflag)
+	and a
+	ld a,d
+	jr nz,4F
+	or (hl)
+4	ld (hl),a
+    call T32_COLOR
+	inc hl
+	jr 3B
+	
+T32_COLOR		push af
+				ld a,(T32_ATT)
+				or a
+				ret z
+				push hl
+; pokud je nula, tak se neobarvuje
+
+//				inc h
+//				inc l
+
+				ld a,h
+				rrca
+				rrca
+				rrca
+				and 3
+				or 88
+				ld h,a
+				ld a,(T32_ATT)
+				ld (hl),a
+				pop hl
+				pop af
+				ret
+;systemove premenne:(pre disu)
+
+flag0	db	#00
+flag1	db	#00
+flag2	db	#00
+inp	db	#00
+
+cursor
+xxx	db	#00
+yyy	db	#00
+leni	dw	0
+adr	dw	0
+
+
+orflag  db  #01
+//znaky
+// INCBIN zx51.ch6
+
+	ENDMODULE
