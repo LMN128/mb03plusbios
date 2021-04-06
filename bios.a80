@@ -14,6 +14,9 @@ ZXi_port5	equ #753B
 ZXi_port6	equ #763B
 ZXi_port7	equ #773B
 ZXi_port8	equ #783B
+
+g_ZXi_port0	equ #7C3B
+g_ZXi_port1	equ #7D3B
 ;███████████████ M A I N  C O D E ███████████████████████████████████████	
 			org 49152		
 maincode
@@ -88,12 +91,18 @@ ramcode
 			ld de,#11FF
 			call draw_jugo.DRAW		
 
-			xor a
 			ld bc,ZXi_port0				//ZXi portselect
 			out (c),a
 			ld a,#FF
 			ld bc,ZXi_port1			
 			out (c),a
+
+			xor a
+			ld bc,g_ZXi_port0
+			out (c),a
+			inc b
+			out (c),a  //select 0 - external device - MB03+
+			
 			ld a,#E2				//FRAM active/write Area 1
 			out (#53),a	
 
@@ -430,7 +439,24 @@ LED			ld	bc,#2003
 			ld	bc,#4810
 			ld	(txy51.cursor),bc
 			ld	hl,LED5
-			call txy51.txy	
+			call txy51.txy
+			ld	bc,#5010
+			ld	(txy51.cursor),bc
+			ld	hl,LED6
+			call txy51.txy
+			ld	bc,#5810
+			ld	(txy51.cursor),bc
+			ld	hl,LED7
+			call txy51.txy
+			ld	bc,#6010
+			ld	(txy51.cursor),bc
+			ld	hl,LED8
+			call txy51.txy
+			ld	bc,#6810
+			ld	(txy51.cursor),bc
+			ld	hl,LED9
+			call txy51.txy
+
 			ld hl, (fram_add+1)
 			ld a,(hl)
 			ex af,af'
@@ -458,7 +484,68 @@ led_set		ld hl,LED_VAL
 
 			ret
 		
-LED_VAL		db 0,1,2,3,4,5,6,7
+LED_VAL		db 0,1,2,3,4,5,6,7,8,9,#A
+
+ESP
+			ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,ESP1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,ESP2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,ESP3
+			call txy51.txy
+						
+			ld hl, (fram_add+1)			
+			ld a,(max_cur+1)
+			ld e,a
+			ld a,(hl)
+			ld	bc,#30FA
+2			ld	(txy51.cursor),bc
+			rrca
+			push af
+			ld a, "0"
+			jr nc,1F
+			inc a
+1			
+			push bc
+			push hl
+			push de
+			call txy51.xy
+			pop de
+			pop hl
+			pop bc
+			ld a,8
+			add a,b
+			ld b,a
+			inc hl
+			pop af
+			dec e
+			jr nz, 2B
+			xor a
+			ret
+
+esp_set		ld a,(show_cur+1)
+			inc a
+			ld b,a
+			ld a,%10000000
+1			rlc a
+			djnz 1B
+			ld hl, (fram_add+1)
+			xor (hl)
+			ld (hl),a
+			push af
+			ld bc, ZXi_port0
+			ld a,#05
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+			ret	
 
 MMC
 			ld	bc,#2003
@@ -515,7 +602,7 @@ mmc_set		ld a,(show_cur+1)
 			inc b
 			pop af
 			out (c),a
-			ret	
+			ret				
 
 DV			ld	bc,#2003
 			ld	(txy51.cursor),bc
@@ -543,9 +630,17 @@ DV			ld	bc,#2003
 			call txy51.txy
 			ld	bc,#5810
 			ld	(txy51.cursor),bc
-			ld	hl,DV6
+			ld	hl,DV52
 			call txy51.txy
 			ld	bc,#6010
+			ld	(txy51.cursor),bc
+			ld	hl,DV53
+			call txy51.txy
+			ld	bc,#6810
+			ld	(txy51.cursor),bc
+			ld	hl,DV6
+			call txy51.txy
+			ld	bc,#7010
 			ld	(txy51.cursor),bc
 			ld	hl,DV7
 			call txy51.txy
@@ -566,8 +661,10 @@ dv_set		ld hl,DV_VAL
 			ld a, (HL)
 			push af
 			ld hl, (fram_add+1)
+			bit 7,a
+			jr nz, 1F //don't save
 			ld (hl),a
-			ld bc, ZXi_port0
+1			ld bc, ZXi_port0
 			ld a,9
 			out (c),a
 			inc b
@@ -576,7 +673,7 @@ dv_set		ld hl,DV_VAL
 
 			ret
 						
-DV_VAL		db 0,1,2,3,4,#FE,#FF			
+DV_VAL		db 0,1,2,3,4,5,6,#FE,#FF			
 
 DVO
 			ld	bc,#2003
@@ -1082,7 +1179,147 @@ dma_set		ld a,(show_cur+1)
 			out (c),a
 			ret			
 
-reg_number  equ 12
+EXTS0		ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,EXTS1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,EXTS2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,EXTS3
+			call txy51.txy
+			ld	bc,#4010
+			ld	(txy51.cursor),bc
+			ld	hl,EXTS4
+			call txy51.txy
+			ld	bc,#4810
+			ld	(txy51.cursor),bc
+			ld	hl,EXTS5
+			call txy51.txy
+			
+			ld hl, (fram_add+1)
+			ld a,(hl)
+			ex af,af'
+			ld a,(max_cur+1)
+			ld b,a
+			ex af,af'
+			ld hl,exts_VAL
+			call cur_num
+			ret
+
+exts_set	ld hl,exts_VAL
+			ld d,0
+			ld e,a
+			add hl,de
+			ld a, (HL)
+			push af
+			ld hl, (fram_add+1)
+			ld (hl),a
+			ld bc, ZXi_port0
+			ld a,#20
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+
+			ret
+
+exts_VAL	db 0,1,2,3,4,5		
+
+ZONE0		ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,ZONE1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,ZONE2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,ZONE3
+			call txy51.txy
+			ld	bc,#4010
+			ld	(txy51.cursor),bc
+			ld	hl,ZONE4
+			call txy51.txy
+			ld	bc,#4810
+			ld	(txy51.cursor),bc
+			ld	hl,ZONE5
+			call txy51.txy
+			ld	bc,#5010
+			ld	(txy51.cursor),bc
+			ld	hl,ZONE6
+			call txy51.txy
+			ld	bc,#5810
+			ld	(txy51.cursor),bc
+			ld	hl,ZONE7
+			call txy51.txy
+			ld	bc,#6010
+			ld	(txy51.cursor),bc
+			ld	hl,ZONE8
+			call txy51.txy
+			ld	bc,#6810
+			ld	(txy51.cursor),bc
+			ld	hl,ZONE9
+			call txy51.txy
+			ld	bc,#7010
+			ld	(txy51.cursor),bc
+			ld	hl,ZONEA
+			call txy51.txy
+			ld	bc,#7810
+			ld	(txy51.cursor),bc
+			ld	hl,ZONEB
+			call txy51.txy
+			ld	bc,#8010
+			ld	(txy51.cursor),bc
+			ld	hl,ZONEC
+			call txy51.txy
+			ld	bc,#8810
+			ld	(txy51.cursor),bc
+			ld	hl,ZONED
+			call txy51.txy
+			ld	bc,#9010
+			ld	(txy51.cursor),bc
+			ld	hl,ZONEE
+			call txy51.txy
+			ld	bc,#9810
+			ld	(txy51.cursor),bc
+			ld	hl,ZONEF
+			call txy51.txy
+			
+			ld hl, (fram_add+1)
+			ld a,(hl)
+			ex af,af'
+			ld a,(max_cur+1)
+			ld b,a
+			ex af,af'
+			ld hl,exts_VAL
+			call cur_num
+			ret
+
+zone_set	ld hl,zone_VAL
+			ld d,0
+			ld e,a
+			add hl,de
+			ld a, (HL)
+			push af
+			ld hl, (fram_add+1)
+			ld (hl),a
+			ld bc, ZXi_port0
+			ld a,#40
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+
+			ret			
+		
+zone_VAL	db 0,1,2,3,4,5,#F8,#F9,#FA,#FB,#FC,#FD,#FE,#FF
+
+reg_number  equ 15
 REG_TAB
 			dw AUDIO
 			db 1,6
@@ -1090,17 +1327,22 @@ REG_TAB
 			dw #2001 //FRAM address
 
 			dw LED
-			db 0,4
+			db 0,8
 			dw led_set
 			dw #2004 
 
+			dw ESP
+			db 1,2
+			dw esp_set
+			dw #2005 
+			
 			dw MMC
 			db 1,1
 			dw mmc_set
 			dw #2006 
 			
 			dw DV
-			db 0,7
+			db 0,8
 			dw dv_set
 			dw #2009
 
@@ -1144,6 +1386,16 @@ REG_TAB
 			dw dma_set
 			dw #2012 
 
+			dw EXTS0
+			db 0,4
+			dw exts_set
+			dw #2020 
+
+			dw ZONE0
+			db 0,14
+			dw zone_set
+			dw #2040 
+
 cur_num		//a-fram value, hl-value table, b-max_cur //out a-cursor number
 			ld e,a
 			xor a
@@ -1160,7 +1412,7 @@ cur_num		//a-fram value, hl-value table, b-max_cur //out a-cursor number
 			xor a // 0 in wrong value
 			ret
 
-defaults    db #13  //number of value for loading defaults
+defaults    db #41  //number of value for loading defaults
 zxi_000		db #00	//machine select
 zxi_001		db #1F	//audio select
 zxi_002		db #03	//IDE - HOOD ports
@@ -1171,7 +1423,7 @@ zxi_006		db #01	//SD - enabled
 zxi_007		db #01	//Kempston - enabled
 zxi_008		db #01	//LIFO stack - enabled
 zxi_009		db #01	//Video Timing - 128/+2
-zxi_00A		db #00	//Video synch
+zxi_00A		db #04	//Video synch - bit2-disable HotPlug detection; bit0-DVI
 zxi_00B		db #03	//Video extra - Gigascreen 2
 zxi_00C		db #01	//Video Timex - enabled
 zxi_00D		db #01	//Video ULAplus - enabled
@@ -1180,6 +1432,52 @@ zxi_00F		db #00	//Video ScanLine - disabled
 zxi_010		db #00	//Custom Rom - disabled
 zxi_011		db #01	//Kempston Mouse
 zxi_012		db #01	//DMA
+zxi_013		db #00	//reserved
+zxi_014		db #00	//reserved
+zxi_015		db #00	//reserved
+zxi_016		db #00	//reserved
+zxi_017		db #00	//reserved
+zxi_018		db #00	//reserved
+zxi_019		db #00	//reserved
+zxi_01A		db #00	//reserved
+zxi_01B		db #00	//reserved
+zxi_01C		db #00	//reserved
+zxi_01D		db #00	//reserved
+zxi_01E		db #00	//reserved
+zxi_01F		db #00	//reserved
+zxi_020		db #02	//Extra short press
+zxi_021		db #00
+zxi_022		db #00
+zxi_023		db #00
+zxi_024		db #00
+zxi_025		db #00
+zxi_026		db #00
+zxi_027		db #00
+zxi_028		db #00
+zxi_029		db #00
+zxi_02A		db #00
+zxi_02B		db #00
+zxi_02C		db #00
+zxi_02D		db #00
+zxi_02E		db #00
+zxi_02F		db #00
+zxi_030		db #00
+zxi_031		db #00
+zxi_032		db #00
+zxi_033		db #00
+zxi_034		db #00
+zxi_035		db #00
+zxi_036		db #00
+zxi_037		db #00
+zxi_038		db #00
+zxi_039		db #00
+zxi_03A		db #00
+zxi_03B		db #00
+zxi_03C		db #00
+zxi_03D		db #00
+zxi_03E		db #00
+zxi_03F		db #00
+zxi_040		db #01 //Time Zone
 
 
 ; --------------- T E X T---------------------------------------
@@ -1227,6 +1525,21 @@ LED4		db 16,7,"GeneralSound (A/B/C/D) audio peak meters"
 			dc " "
 LED5		db 16,7,"char mode"
 			dc " "
+LED6		db 16,7,"Memory ports map"
+			dc " "
+LED7		db 16,7,"Memory CPU map"
+			dc " "
+LED8		db 16,7,"Memory CPU /M1 only map"
+			dc " "		
+LED9		db 16,7,"Memory Ultimate mode map"
+			dc " "											
+
+ESP1		db 16,67,"ESP WiFi: "
+			dc " "
+ESP2		db 16,7,"enable"
+			dc " "
+ESP3		db 16,7,"set lower RF power"
+			dc " "			
 
 MMC1		db 16,67,"SD/MMC: "
 			dc " "
@@ -1243,8 +1556,12 @@ DV4			db 16,7,"Harlequin 128 (model 2D)"
 			dc " "
 DV5			db 16,7,"ZX Spectrum 128+2A/2B/+3"
 			dc " "
-DV51		db 16,7,"Sparrow 48K"
+DV51		db 16,7,"48K clones on 3.5000MHz: Humble48, etc."
+			dc " "	
+DV52		db 16,7,"Pentagon on 3.5000MHz"
 			dc " "			
+DV53		db 16,7,"Karabas 128"
+			dc " "							
 DV6			db 16,7," Test Text Pattern"
 			dc " "
 DV7			db 16,7," Test Colour Moving Pattern"
@@ -1269,7 +1586,7 @@ DVE4		db 16,7,"GigaScreen mode1: two video frames mix"
 			dc " "	
 DVE5		db 16,7,"GigaScreen mode2: autodetect mode1"
 			dc " "
-DVE6		db 16,7,"GigaScreen mode3: simple layer"
+DVE6		db 16,7,"GigaScreen mode3: KeyLayer"
 			dc " "			
 
 DVT1		db 16,67,"Screen Video Mode - TIMEX graphics modes"
@@ -1338,7 +1655,51 @@ MICE2		db 16,7,"enable"
 DMA1		db 16,67,"DMA"
 			dc " "
 DMA2		db 16,7,"enable"
-			dc " "																										
+			dc " "			
+
+EXTS1		db 16,67,"EXTRA button function"
+			dc " "	
+EXTS2		db 16,7,"none (disabled)"
+			dc " "		
+EXTS3		db 16,7,"Warm reset"
+			dc " "	
+EXTS4		db 16,7,"LED Matrix mode"
+			dc " "	
+EXTS5		db 16,7,"Extra graphics mode"
+			dc " "					
+
+ZONE1		db 16,67,"RTC Time Zone"
+			dc " "	
+ZONE2		db 16,7,"GMT+0 (Canary Island)"
+			dc " "		
+ZONE3		db 16,7,"GMT+1 (Zlin)"
+			dc " "	
+ZONE4		db 16,7,"GMT+2 (Santorini)"
+			dc " "	
+ZONE5		db 16,7,"GMT+3 (Madagascar)"
+			dc " "			
+ZONE6		db 16,7,"GMT+4 (Mauritius)"
+			dc " "		
+ZONE7		db 16,7,"GMT+5 (Sri Lanka)"
+			dc " "		
+ZONE8		db 16,7,"GMT-8 (Pacific Time)"
+			dc " "		
+ZONE9		db 16,7,"GMT-7 (Yukon)"
+			dc " "	
+ZONEA		db 16,7,"GMT-6 (Colorado Springs)"
+			dc " "		
+ZONEB		db 16,7,"GMT-5 (Haiti) "
+			dc " "	
+ZONEC		db 16,7,"GMT-4 (Atlantic Time)"
+			dc " "	
+ZONED		db 16,7,"GMT-3 (Greenland)"
+			dc " "	
+ZONEE		db 16,7,"GMT-2"
+			dc " "	
+ZONEF		db 16,7,"GMT-1 (Azores)"
+			dc " "	
+																				
+
 ; --------------- L I B R A R I E S ---------------------------------------	
 	
 //INCLUDE "nasobeniHLDE.a80"
