@@ -760,10 +760,10 @@ DVE			ld	bc,#2003
 			ld	(txy51.cursor),bc
 			ld	hl,DVE5
 			call txy51.txy
-			ld	bc,#5010
+/*			ld	bc,#5010
 			ld	(txy51.cursor),bc
 			ld	hl,DVE6
-			call txy51.txy
+			call txy51.txy*/
 
 			ld hl, (fram_add+1)
 			ld a,(hl)
@@ -1072,54 +1072,47 @@ MICE
 			ld	(txy51.cursor),bc
 			ld	hl,MICE2
 			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,MICE3
+			call txy51.txy
+			ld	bc,#4010
+			ld	(txy51.cursor),bc
+			ld	hl,MICE4
+			call txy51.txy
+			ld	bc,#4810
+			ld	(txy51.cursor),bc
+			ld	hl,MICE5
+			call txy51.txy
 						
 			ld hl, (fram_add+1)
-			
-			ld a,(max_cur+1)
-			ld e,a
 			ld a,(hl)
-			ld	bc,#30FA
-2			ld	(txy51.cursor),bc
-			rrca
-			push af
-			ld a, "0"
-			jr nc,1F
-			inc a
-1			
-			push bc
-			push hl
-			push de
-			call txy51.xy
-			pop de
-			pop hl
-			pop bc
-			ld a,8
-			add a,b
+			ex af,af'
+			ld a,(max_cur+1)
 			ld b,a
-			inc hl
-			pop af
-			dec e
-			jr nz, 2B
-			xor a
+			ex af,af'
+			ld hl,mice_VAL
+			call cur_num
 			ret
 
-mice_set		ld a,(show_cur+1)
-			inc a
-			ld b,a
-			ld a,%10000000
-1			rlc a
-			djnz 1B
-			ld hl, (fram_add+1)
-			xor (hl)
-			ld (hl),a
+mice_set	ld hl,mice_VAL
+			ld d,0
+			ld e,a
+			add hl,de
+			ld a, (HL)
 			push af
+			ld hl, (fram_add+1)
+			ld (hl),a
 			ld bc, ZXi_port0
-			ld a,#11 	//ZXi register
+			ld a,#11
 			out (c),a
 			inc b
 			pop af
 			out (c),a
+
 			ret
+		
+mice_VAL	db 0,1,2,3,4,5
 
 DMA0
 			ld	bc,#2003
@@ -1342,12 +1335,12 @@ REG_TAB
 			dw #2006 
 			
 			dw DV
-			db 0,8
+			db 0,9
 			dw dv_set
 			dw #2009
 
 			dw DVE
-			db 0,5
+			db 0,4
 			dw dve_set
 			dw #200B 
 			
@@ -1377,7 +1370,7 @@ REG_TAB
 			dw #2010 //FRAM address
 
 			dw MICE
-			db 1,1
+			db 0,4
 			dw mice_set
 			dw #2011 
 
@@ -1647,10 +1640,16 @@ CROMB		db 16,7,"Crom0-3 (64KB mode)"
 CROMC		db 16,7,"Crom4-7 (64KB mode)"
 			dc " "
 
-MICE1		db 16,67,"Kempston Mouse"
+MICE1		db 16,67,"Mouse/Keyboard"
 			dc " "
-MICE2		db 16,7,"enable"
+MICE2		db 16,7,"none (disabled)"
+			dc " "			
+MICE3		db 16,7,"K-Mouse master"
 			dc " "
+MICE4		db 16,7,"K-Mouse slave"
+			dc " "			
+MICE5		db 16,7,"Keyboard"
+			dc " "	
 
 DMA1		db 16,67,"DMA"
 			dc " "
