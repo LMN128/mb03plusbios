@@ -636,14 +636,14 @@ DV			ld	bc,#2003
 			ld	(txy51.cursor),bc
 			ld	hl,DV53
 			call txy51.txy
-			ld	bc,#6810
+/*			ld	bc,#6810
 			ld	(txy51.cursor),bc
 			ld	hl,DV6
 			call txy51.txy
 			ld	bc,#7010
 			ld	(txy51.cursor),bc
 			ld	hl,DV7
-			call txy51.txy
+			call txy51.txy*/
 			ld hl, (fram_add+1)
 			ld a,(hl)
 			ex af,af'
@@ -918,6 +918,132 @@ dvu_set		ld a,(show_cur+1)
 			out (c),a
 			ret
 
+TSFM
+			ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,TSFM1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,TSFM2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,TSFM3
+			call txy51.txy
+			ld	bc,#4010
+			ld	(txy51.cursor),bc
+			ld	hl,TSFM4
+			call txy51.txy
+			
+			ld hl, (fram_add+1)			
+			ld a,(max_cur+1)
+			ld e,a
+			ld a,(hl)
+			ld	bc,#30FA
+2			ld	(txy51.cursor),bc
+			rrca
+			push af
+			ld a, "0"
+			jr nc,1F
+			inc a
+1			
+			push bc
+			push hl
+			push de
+			call txy51.xy
+			pop de
+			pop hl
+			pop bc
+			ld a,8
+			add a,b
+			ld b,a
+			inc hl
+			pop af
+			dec e
+			jr nz, 2B
+			xor a
+			ret
+
+tsfm_set	ld a,(show_cur+1)
+			inc a
+			ld b,a
+			ld a,%10000000
+1			rlc a
+			djnz 1B
+			ld hl, (fram_add+1)
+			xor (hl)
+			ld (hl),a
+			push af
+			ld bc, ZXi_port0
+			ld a,#18
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+			ret		
+
+SID
+			ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,SID1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,SID2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,SID3
+			call txy51.txy
+			
+			ld hl, (fram_add+1)			
+			ld a,(max_cur+1)
+			ld e,a
+			ld a,(hl)
+			ld	bc,#30FA
+2			ld	(txy51.cursor),bc
+			rrca
+			push af
+			ld a, "0"
+			jr nc,1F
+			inc a
+1			
+			push bc
+			push hl
+			push de
+			call txy51.xy
+			pop de
+			pop hl
+			pop bc
+			ld a,8
+			add a,b
+			ld b,a
+			inc hl
+			pop af
+			dec e
+			jr nz, 2B
+			xor a
+			ret
+
+sid_set	ld a,(show_cur+1)
+			inc a
+			ld b,a
+			ld a,%10000000
+1			rlc a
+			djnz 1B
+			ld hl, (fram_add+1)
+			xor (hl)
+			ld (hl),a
+			push af
+			ld bc, ZXi_port0
+			ld a,#19
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+			ret			
+
 DVP
 			ld	bc,#2003
 			ld	(txy51.cursor),bc
@@ -1113,6 +1239,119 @@ mice_set	ld hl,mice_VAL
 			ret
 		
 mice_VAL	db 0,1,2,3,4,5
+
+ZCSD
+			ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,ZCSD1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,ZCSD2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,ZCSD3
+			call txy51.txy
+			ld	bc,#4010
+			ld	(txy51.cursor),bc
+			ld	hl,ZCSD4
+			call txy51.txy
+						
+			ld hl, (fram_add+1)
+			ld a,(hl)
+			ex af,af'
+			ld a,(max_cur+1)
+			ld b,a
+			ex af,af'
+			ld hl,zcsd_VAL
+			call cur_num
+			ret
+
+zcsd_set	ld hl,mice_VAL
+			ld d,0
+			ld e,a
+			add hl,de
+			ld a, (HL)
+			push af
+			ld hl, (fram_add+1)
+			ld (hl),a
+			ld bc, ZXi_port0
+			ld a,#2C
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+
+			ret
+		
+zcsd_VAL	db 0,1,2,3
+
+DIVSD
+			ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,DIVSD1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,DIVSD2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,DIVSD3
+			call txy51.txy
+/*			ld	bc,#4010
+			ld	(txy51.cursor),bc
+			ld	hl,DVU4
+			call txy51.txy*/
+			
+			ld hl, (fram_add+1)
+			
+			ld a,(max_cur+1)
+			ld e,a
+			ld a,(hl)
+			ld	bc,#30FA
+2			ld	(txy51.cursor),bc
+			rrca
+			push af
+			ld a, "0"
+			jr nc,1F
+			inc a
+1			
+			push bc
+			push hl
+			push de
+			call txy51.xy
+			pop de
+			pop hl
+			pop bc
+			ld a,8
+			add a,b
+			ld b,a
+			inc hl
+			pop af
+			dec e
+			jr nz, 2B
+			xor a
+			ret
+
+divsd_set	ld a,(show_cur+1)
+			inc a
+			ld b,a
+			ld a,%10000000
+1			rlc a
+			djnz 1B
+			ld hl, (fram_add+1)
+			xor (hl)
+			ld (hl),a
+			push af
+			ld bc, ZXi_port0
+			ld a,#2D 	//ZXi register
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+			ret
 
 DMA0
 			ld	bc,#2003
@@ -1312,38 +1551,151 @@ zone_set	ld hl,zone_VAL
 		
 zone_VAL	db 0,1,2,3,4,5,#F8,#F9,#FA,#FB,#FC,#FD,#FE,#FF
 
-reg_number  equ 15
+DEBUG0		ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,DEBUG1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,DEBUG2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,DEBUG3
+			call txy51.txy
+			ld	bc,#4010
+			ld	(txy51.cursor),bc
+			ld	hl,DEBUG31
+			call txy51.txy
+			ld	bc,#4810
+			ld	(txy51.cursor),bc
+			ld	hl,DEBUG4
+			call txy51.txy
+			ld	bc,#5010
+			ld	(txy51.cursor),bc
+			ld	hl,DEBUG5
+			call txy51.txy
+			
+			ld hl, (fram_add+1)
+			ld a,(hl)
+			ex af,af'
+			ld a,(max_cur+1)
+			ld b,a
+			ex af,af'
+			ld hl,debug_VAL
+			call cur_num
+			ret
+
+debug_set	ld hl,debug_VAL
+			ld d,0
+			ld e,a
+			add hl,de
+			ld a, (HL)
+			push af
+			ld hl, (fram_add+1)
+			bit 7,a
+			jr nz, 1F //don't save
+			ld (hl),a
+1			ld bc, ZXi_port0
+			ld a,#3F
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+
+			ret
+		
+debug_VAL	db 0,1,2,#FE,#FF
+
+
+JOY			ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,JOY1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,JOY2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,JOY3
+			call txy51.txy
+			ld	bc,#4010
+			ld	(txy51.cursor),bc
+/*			ld	hl,JOY4
+			call txy51.txy
+			ld	bc,#4810
+			ld	(txy51.cursor),bc
+			ld	hl,JOY5
+			call txy51.txy
+			ld	bc,#5010
+			ld	(txy51.cursor),bc
+			ld	hl,JOY6
+			call txy51.txy
+			ld	bc,#5810
+			ld	(txy51.cursor),bc
+			ld	hl,JOY7
+			call txy51.txy
+			ld	bc,#6010
+			ld	(txy51.cursor),bc
+			ld	hl,JOY8
+			call txy51.txy	*/
+			ld hl, (fram_add+1)
+			ld a,(hl)
+			ex af,af'
+			ld a,(max_cur+1)
+			ld b,a
+			ex af,af'
+			ld hl,JOY_VAL
+			call cur_num
+			ret
+
+joy_set		ld hl,JOY_VAL
+			ld d,0
+			ld e,a
+			add hl,de
+			ld a, (HL)
+			push af
+			ld hl, (fram_add+1)
+			ld (hl),a
+			ld bc, ZXi_port0
+			ld a,3
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+
+			ret
+		
+JOY_VAL		db 0,1,2,3,4,5,6,7
+
+reg_number  equ 21
 REG_TAB
+			dw DV
+			db 0,7
+			dw dv_set
+			dw #2009
+
+			dw LED
+			db 0,8
+			dw led_set
+			dw #2004 		
+
 			dw AUDIO
 			db 1,6
 			dw audio_set
 			dw #2001 //FRAM address
 
-			dw LED
-			db 0,8
-			dw led_set
-			dw #2004 
+			dw JOY
+			db 0,2
+			dw joy_set
+			dw #2007 
 
-			dw ESP
-			db 1,2
-			dw esp_set
-			dw #2005 
-			
-			dw MMC
-			db 1,1
-			dw mmc_set
-			dw #2006 
-			
-			dw DV
-			db 0,9
-			dw dv_set
-			dw #2009
-
-			dw DVE
+			dw MICE
 			db 0,4
-			dw dve_set
-			dw #200B 
-			
+			dw mice_set
+			dw #2011 
+
 			dw DVT
 			db 1,1
 			dw dvt_set
@@ -1352,42 +1704,77 @@ REG_TAB
 			dw DVU
 			db 1,3
 			dw dvu_set
-			dw #200D 
+			dw #200D
 
-			dw DVO
+			dw TSFM
 			db 1,3
-			dw dvo_set
-			dw #200A 
+			dw tsfm_set
+			dw #2018 
+			
+			dw SID
+			db 1,2
+			dw sid_set
+			dw #2019 			
+			
+			dw DVE
+			db 0,4
+			dw dve_set
+			dw #200B 
 
 			dw DVP
 			db 0,8
 			dw dvp_set
-			dw #200F 
-
-			dw CROM
-			db 0,#B
-			dw crom_set
-			dw #2010 //FRAM address
-
-			dw MICE
+			dw #200F
+			
+			dw DVO
+			db 1,3
+			dw dvo_set
+			dw #200A 	
+			
+			dw EXTS0
 			db 0,4
-			dw mice_set
-			dw #2011 
+			dw exts_set
+			dw #2020 
+			
+			dw MMC
+			db 1,1
+			dw mmc_set
+			dw #2006 
 
 			dw DMA0
 			db 1,1
 			dw dma_set
 			dw #2012 
 
-			dw EXTS0
-			db 0,4
-			dw exts_set
-			dw #2020 
+			dw ZCSD
+			db 0,3
+			dw zcsd_set
+			dw #202C 
+
+			dw DIVSD
+			db 1,2
+			dw divsd_set
+			dw #202D
+
+			dw ESP
+			db 1,2
+			dw esp_set
+			dw #2005 
+
+			dw CROM
+			db 0,#B
+			dw crom_set
+			dw #2010 //FRAM address
 
 			dw ZONE0
 			db 0,14
 			dw zone_set
 			dw #2040 
+
+			dw DEBUG0
+			db 0,5
+			dw debug_set
+			dw #203F 
 
 cur_num		//a-fram value, hl-value table, b-max_cur //out a-cursor number
 			ld e,a
@@ -1407,7 +1794,7 @@ cur_num		//a-fram value, hl-value table, b-max_cur //out a-cursor number
 
 defaults    db #41  //number of value for loading defaults
 zxi_000		db #00	//machine select
-zxi_001		db #1F	//audio select
+zxi_001		db #3F	//audio select
 zxi_002		db #03	//IDE - HOOD ports
 zxi_003		db #01	//RTC - enabled
 zxi_004		db #01	//LED Matrix - left/right
@@ -1430,8 +1817,8 @@ zxi_014		db #00	//reserved
 zxi_015		db #00	//reserved
 zxi_016		db #00	//reserved
 zxi_017		db #00	//reserved
-zxi_018		db #00	//reserved
-zxi_019		db #00	//reserved
+zxi_018		db #00	//TurboSound FM
+zxi_019		db #00	//SID
 zxi_01A		db #00	//reserved
 zxi_01B		db #00	//reserved
 zxi_01C		db #00	//reserved
@@ -1450,8 +1837,8 @@ zxi_028		db #00
 zxi_029		db #00
 zxi_02A		db #00
 zxi_02B		db #00
-zxi_02C		db #00
-zxi_02D		db #00
+zxi_02C		db #00	//Z-Controller
+zxi_02D		db #00	//divSD
 zxi_02E		db #00
 zxi_02F		db #00
 zxi_030		db #00
@@ -1469,7 +1856,7 @@ zxi_03B		db #00
 zxi_03C		db #00
 zxi_03D		db #00
 zxi_03E		db #00
-zxi_03F		db #00
+zxi_03F		db #00 //Diagnostic
 zxi_040		db #01 //Time Zone
 
 
@@ -1493,7 +1880,7 @@ SELECT		db 16,66,0
 			dc " "		
 DESELECT	dc "  "			
 
-AUDIO1		db 16,67,"Audio: "
+AUDIO1		db 16,67,"Audio "
 			dc " "
 AUDIO2		db 16,7,"enable ULA audio"
 			dc " "
@@ -1505,10 +1892,26 @@ AUDIO5		db 16,7,"enable MonsterBlaster (SounDrive, etc.)"
 			dc " "
 AUDIO6		db 16,7,"enable General Sound"
 			dc " "
-AUDIO7		db 16,7,"select 0-3xAY or 1-TSFM(2xYM2203)"
-			dc " "			
+AUDIO7		db 16,7,"enable SID"
+			dc " "	
 
-LED1		db 16,67,"LED Matrix: "
+SID1		db 16,67,"SID"
+			dc " "
+SID2		db 16,7,"Chip model: 0-6581, 1-8580"
+			dc " "
+SID3		db 16,7,"Frequency: 0-PAL, 1-NTSC"
+			dc " "		
+
+TSFM1		db 16,67,"TurboSound FM"
+			dc " "
+TSFM2		db 16,7,"Chip model: 0-AY, 1-YM"
+			dc " "							
+TSFM3		db 16,7,"Stereo: 0-ACB, 1-ABC"
+			dc " "	
+TSFM4		db 16,7,"select 0-3xAY or 1-TSFM(2xYM2203)"
+			dc " "							
+
+LED1		db 16,67,"LED Matrix "
 			dc " "
 LED2		db 16,7,"none (disabled)"
 			dc " "
@@ -1527,19 +1930,26 @@ LED8		db 16,7,"Memory CPU /M1 only map"
 LED9		db 16,7,"Memory Ultimate mode map"
 			dc " "											
 
-ESP1		db 16,67,"ESP WiFi: "
+ESP1		db 16,67,"ESP WiFi "
 			dc " "
 ESP2		db 16,7,"enable"
 			dc " "
 ESP3		db 16,7,"set lower RF power"
 			dc " "			
 
-MMC1		db 16,67,"SD/MMC: "
+MMC1		db 16,67,"SD/MMC "
 			dc " "
 MMC2		db 16,7,"enable"
 			dc " "
 
-DV1			db 16,67,"Screen Video Mode - Video Timing: "
+JOY1		db 16,67,"Joystick "
+			dc " "
+JOY2		db 16,7,"none (disabled)"
+			dc " "
+JOY3		db 16,7,"Kempston "
+			dc " "
+
+DV1			db 16,67,"Video Timing "
 			dc " "
 DV2			db 16,7,"ZX Spectrum 48"
 			dc " "
@@ -1555,12 +1965,8 @@ DV52		db 16,7,"Pentagon on 3.5000MHz"
 			dc " "			
 DV53		db 16,7,"Karabas 128"
 			dc " "							
-DV6			db 16,7," Test Text Pattern"
-			dc " "
-DV7			db 16,7," Test Colour Moving Pattern"
-			dc " "
 
-DVO1		db 16,67,"Digital Video Output: "
+DVO1		db 16,67,"Digital Video Output "
 			dc " "
 DVO2		db 16,7,"enable legacy DVI"
 			dc " "
@@ -1569,7 +1975,7 @@ DVO3		db 16,7,"enable ULTIMATE synchron. - only for some TV"
 DVO4		db 16,7,"HotPlug detection disable (TV/Monitor signal)"
 			dc " "
 
-DVE1		db 16,67,"Screen Video Mode - Extra graphics mode"
+DVE1		db 16,67,"GigaScreen - old TV/Monitor sum colors effect"
 			dc " "
 DVE2		db 16,7,"none (disabled)"
 			dc " "
@@ -1582,12 +1988,12 @@ DVE5		db 16,7,"GigaScreen mode2: autodetect mode1"
 DVE6		db 16,7,"GigaScreen mode3: KeyLayer"
 			dc " "			
 
-DVT1		db 16,67,"Screen Video Mode - TIMEX graphics modes"
+DVT1		db 16,67,"TIMEX graphics modes"
 			dc " "
 DVT2		db 16,7,"enable TIMEX gfx modes"
 			dc " "
 
-DVU1		db 16,67,"Screen Video Mode - ULAplus palettes modes"
+DVU1		db 16,67,"ULAplus"
 			dc " "
 DVU2		db 16,7,"enable ULAplus palettes"
 			dc " "
@@ -1596,7 +2002,7 @@ DVU3		db 16,7,"enable TIMEX mode select by ULAplus regs"
 DVU4		db 16,7,"enable SLAM+ slow ports (not implemented)"	
 			dc " "	
 
-DVP1		db 16,67,"Digital Video Output - Scan line effects"
+DVP1		db 16,67,"Scan line (old CRT/TV) effect"
 			dc " "
 DVP2		db 16,7,"none (disabled)"
 			dc " "
@@ -1651,6 +2057,22 @@ MICE4		db 16,7,"K-Mouse slave"
 MICE5		db 16,7,"Keyboard"
 			dc " "	
 
+ZCSD1		db 16,67,"Z-Controller SD"
+			dc " "
+ZCSD2		db 16,7,"none (disabled)"
+			dc " "			
+ZCSD3		db 16,7,"on first SD slot"
+			dc " "
+ZCSD4		db 16,7,"on second SD slot"
+			dc " "
+
+DIVSD1		db 16,67,"divSD"
+			dc " "
+DIVSD2		db 16,7,"select ROM: 0-FPGA(rescue esxDOS), 1-FLASH"
+			dc " "
+DIVSD3		db 16,7,"swap order first/second SD"
+			dc " "
+
 DMA1		db 16,67,"DMA"
 			dc " "
 DMA2		db 16,7,"enable"
@@ -1664,7 +2086,7 @@ EXTS3		db 16,7,"Warm reset"
 			dc " "	
 EXTS4		db 16,7,"LED Matrix mode"
 			dc " "	
-EXTS5		db 16,7,"Extra graphics mode"
+EXTS5		db 16,7,"GigaScreen"
 			dc " "					
 
 ZONE1		db 16,67,"RTC Time Zone"
@@ -1697,6 +2119,19 @@ ZONEE		db 16,7,"GMT-2"
 			dc " "	
 ZONEF		db 16,7,"GMT-1 (Azores)"
 			dc " "	
+
+DEBUG1		db 16,67,"Diagnostic"
+			dc " "
+DEBUG2		db 16,7,"none (disabled)"
+			dc " "		
+DEBUG3		db 16,7,"Video sync."
+			dc " "	
+DEBUG31		db 16,7,"Audio level"
+			dc " "			
+DEBUG4		db 16,7,"Video Test Text Pattern"
+			dc " "
+DEBUG5		db 16,7,"Video Test Colour Moving Pattern"
+			dc " "				
 																				
 
 ; --------------- L I B R A R I E S ---------------------------------------	
