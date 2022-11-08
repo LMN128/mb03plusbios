@@ -24,10 +24,8 @@ maincode
 bios		di
 			ld sp,0
 			im 1
-;			ld	a, #C3				; Z80DMA command: WR6: Reset
-;			out	(DMA), a
 			xor	a
-			ld	i, a
+			ld	i,a
 			jr boot2
 			db "LMN128"
 //WARNING max #38 bytes!!!!			
@@ -36,8 +34,7 @@ endboot		BLOCK #38-endboot,0
 im1			ei
 			ret					
 boot2
-
-endramtest	ld hl,ramcodeinrom
+			ld hl,ramcodeinrom
 			ld de,ramcode
 			ld bc,endramcode-ramcode
 			ldir
@@ -91,10 +88,11 @@ ramcode
 			ld de,#11FF
 			call draw_jugo.DRAW		
 
+			xor a
 			ld bc,ZXi_port0				//ZXi portselect
 			out (c),a
 			ld a,#FF
-			ld bc,ZXi_port1			
+			inc b	
 			out (c),a
 
 			xor a
@@ -203,8 +201,9 @@ loopkey
 2			ld a,(num_reg+1)
 			dec a
 			cp 255
-			jr z,loopkey
-			ld (num_reg+1),a
+			jr nz,3F
+			ld a,reg_number-1
+3			ld (num_reg+1),a
 			jp chn_reg
 1			cp 8					//left
 			jr z,2B
@@ -213,9 +212,10 @@ loopkey
 			jr nz,1F
 2			ld a,(num_reg+1)
 			inc a
-			cp reg_number					//number of reg	
-			jr z,loopkey
-			ld (num_reg+1),a
+			cp reg_number				
+			jr nz,3F
+			xor a
+3			ld (num_reg+1),a
 			jp chn_reg	
 1			cp 9					//right
 			jr z,2B
@@ -267,7 +267,7 @@ set_call1	call 0    //mode1 call
 restart		ld bc,ZXi_port0				//ZXi portselect
 			out (c),a
 			ld a,#FF
-			ld bc,ZXi_port1			
+			inc b		
 			out (c),a
 			xor a
 			out (#27),a
@@ -342,6 +342,60 @@ clean		ld a,8			//clear place
 			ld (hl),l
 			ldir					
 			ret	
+
+STARTUP			ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,STARTUP1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,STARTUP2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,STARTUP3
+			call txy51.txy
+			ld	bc,#4010
+			ld	(txy51.cursor),bc
+			ld	hl,STARTUP4
+			call txy51.txy
+			ld	bc,#4810
+			ld	(txy51.cursor),bc
+			ld	hl,STARTUP5
+			call txy51.txy
+			ld	bc,#6803
+			ld	(txy51.cursor),bc
+			ld	hl,STARTUPinfo
+			call txy51.txy
+			
+			ld hl, (fram_add+1)
+			ld a,(hl)
+			ex af,af'
+			ld a,(max_cur+1)
+			ld b,a
+			ex af,af'
+			ld hl,STARTUP_VAL
+			call cur_num
+			ret
+
+startup_set		ld hl,STARTUP_VAL
+			ld d,0
+			ld e,a
+			add hl,de
+			ld a, (HL)
+			push af
+			ld hl, (fram_add+1)
+			ld (hl),a
+			ld bc, ZXi_port0
+			ld a,#22
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+
+			ret
+		
+STARTUP_VAL		db 0,1,2,3,4,5,6,7,8,9,#A
 
 AUDIO
 			ld	bc,#2003
@@ -1669,8 +1723,13 @@ joy_set		ld hl,JOY_VAL
 		
 JOY_VAL		db 0,1,2,3,4,5,6,7
 
-reg_number  equ 21
+reg_number  equ 22
 REG_TAB
+			dw STARTUP
+			db 0,4
+			dw startup_set
+			dw #2022
+			
 			dw DV
 			db 0,7
 			dw dv_set
@@ -1827,7 +1886,7 @@ zxi_01E		db #00	//reserved
 zxi_01F		db #00	//reserved
 zxi_020		db #02	//Extra short press
 zxi_021		db #00
-zxi_022		db #00
+zxi_022		db #00	//reset StartUp order
 zxi_023		db #00
 zxi_024		db #00
 zxi_025		db #00
@@ -1838,7 +1897,7 @@ zxi_029		db #00
 zxi_02A		db #00
 zxi_02B		db #00
 zxi_02C		db #00	//Z-Controller
-zxi_02D		db #00	//divSD
+zxi_02D		db #01	//divSD
 zxi_02E		db #00
 zxi_02F		db #00
 zxi_030		db #00
@@ -1862,7 +1921,7 @@ zxi_040		db #01 //Time Zone
 
 ; --------------- T E X T---------------------------------------
 TEXT0 	 	dc 16,7,"LMN128"
-TEXT1    	db 16,69,"MB03+ Ultimate  ",16,7+64,"BIOS-SetUp"
+TEXT1    	db 16,69,"MB03+ Ultimate  ",16,7+64,"     SetUp"
 			dc " "
 TEXT2	 	db 16,65,"Cursor-navigation; Enter-change; R-restart"
 			dc " "
@@ -1879,6 +1938,19 @@ STRIPS		db 16,66,32,32
 SELECT		db 16,66,0
 			dc " "		
 DESELECT	dc "  "			
+
+STARTUP1	db 16,67,"Reset StartUp order"
+			dc " "
+STARTUP2	db 16,7,"Firmware full boot"
+			dc " "
+STARTUP3	db 16,7,"Firmware fast boot"
+			dc " "	
+STARTUP4	db 16,7,"BSDOS boot"
+			dc " "
+STARTUP5	db 16,7,"esxDOS boot (SD)"
+			dc " "	
+STARTUPinfo	db 16,7,"press 'Enter' during reset for Firmware full boot"
+			dc " "										
 
 AUDIO1		db 16,67,"Audio "
 			dc " "
