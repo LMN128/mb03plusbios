@@ -2194,7 +2194,7 @@ ZONEF		db 16,7,"GMT-1 (Azores)"
 
 DEBUG1		db 16,67,"Diagnostic"
 			dc " "
-DEBUG2		db 16,7,"none (disabled)"
+DEBUG2		db 16,7,"none "
 			dc " "		
 DEBUG3		db 16,7,"Video sync."
 			dc " "	
