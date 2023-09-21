@@ -1720,10 +1720,52 @@ joy_set		ld hl,JOY_VAL
 			out (c),a
 
 			ret
-		
 JOY_VAL		db 0,1,2,3,4,5,6,7
 
-reg_number  equ 22
+UART0		ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,UART1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,UART2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,UART3
+			call txy51.txy			
+			
+			ld hl, (fram_add+1)
+			ld a,(hl)
+			ex af,af'
+			ld a,(max_cur+1)
+			ld b,a
+			ex af,af'
+			ld hl,debug_VAL
+			call cur_num
+			ret
+
+uart_set	ld hl,uart_VAL
+			ld d,0
+			ld e,a
+			add hl,de
+			ld a, (HL)
+			push af
+			ld hl, (fram_add+1)
+			ld (hl),a
+			ld bc, ZXi_port0
+			ld a,#39
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+
+			ret
+		
+uart_VAL	db 0,1,2,3		
+
+
+reg_number  equ 23
 REG_TAB
 			dw STARTUP
 			db 0,4
@@ -1820,6 +1862,11 @@ REG_TAB
 			dw esp_set
 			dw #2005 
 
+			dw UART0
+			db 0,2
+			dw uart_set
+			dw #2039 
+
 			dw CROM
 			db 0,#B
 			dw crom_set
@@ -1909,7 +1956,7 @@ zxi_035		db #00
 zxi_036		db #00
 zxi_037		db #00
 zxi_038		db #00
-zxi_039		db #00
+zxi_039		db #01 //UART - WiFi enable
 zxi_03A		db #00
 zxi_03B		db #00
 zxi_03C		db #00
@@ -2203,7 +2250,16 @@ DEBUG31		db 16,7,"Audio level"
 DEBUG4		db 16,7,"Video Test Text Pattern"
 			dc " "
 DEBUG5		db 16,7,"Video Test Colour Moving Pattern"
-			dc " "				
+			dc " "	
+
+UART1		db 16,67,"UART(WiFi)"
+			dc " "
+UART2		db 16,7,"internal USB-UART - microUSB"
+			dc " "		
+UART3		db 16,7,"WiFi - ESP01 module"
+			dc " "	
+		
+			
 																				
 
 ; --------------- L I B R A R I E S ---------------------------------------	
