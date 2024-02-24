@@ -1406,7 +1406,63 @@ divsd_set	ld a,(show_cur+1)
 			pop af
 			out (c),a
 			ret
+NMI0
+			ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,NMI1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,NMI2
+			call txy51.txy
+						
+			ld hl, (fram_add+1)
+			
+			ld a,(max_cur+1)
+			ld e,a
+			ld a,(hl)
+			ld	bc,#30FA
+2			ld	(txy51.cursor),bc
+			rrca
+			push af
+			ld a, "0"
+			jr nc,1F
+			inc a
+1			
+			push bc
+			push hl
+			push de
+			call txy51.xy
+			pop de
+			pop hl
+			pop bc
+			ld a,8
+			add a,b
+			ld b,a
+			inc hl
+			pop af
+			dec e
+			jr nz, 2B
+			xor a
+			ret
 
+nmi_set		ld a,(show_cur+1)
+			inc a
+			ld b,a
+			ld a,%10000000
+1			rlc a
+			djnz 1B
+			ld hl, (fram_add+1)
+			xor (hl)
+			ld (hl),a
+			push af
+			ld bc, ZXi_port0
+			ld a,#2E	//ZXi register
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+			ret
 DMA0
 			ld	bc,#2003
 			ld	(txy51.cursor),bc
@@ -1765,7 +1821,7 @@ uart_set	ld hl,uart_VAL
 uart_VAL	db 0,1,2,3		
 
 
-reg_number  equ 23
+reg_number  equ 24
 REG_TAB
 			dw STARTUP
 			db 0,4
@@ -1867,6 +1923,11 @@ REG_TAB
 			dw uart_set
 			dw #2039 
 
+			dw NMI0
+			db 1,1
+			dw nmi_set
+			dw #2012 
+
 			dw CROM
 			db 0,#B
 			dw crom_set
@@ -1945,7 +2006,7 @@ zxi_02A		db #00
 zxi_02B		db #00
 zxi_02C		db #00	//Z-Controller
 zxi_02D		db #01	//divSD
-zxi_02E		db #00
+zxi_02E		db #00	//SafeNMI
 zxi_02F		db #00
 zxi_030		db #00
 zxi_031		db #00
@@ -2188,7 +2249,12 @@ DIVSD3		db 16,7,"swap order first/second SD"
 DMA1		db 16,67,"DMA"
 			dc " "
 DMA2		db 16,7,"enable"
-			dc " "			
+			dc " "		
+
+NMI1		db 16,67,"SafeNMI (don't enable with eLeMeNt ZX)"
+			dc " "
+NMI2		db 16,7,"enable"
+			dc " "	
 
 EXTS1		db 16,67,"EXTRA button function"
 			dc " "	
