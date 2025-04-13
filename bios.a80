@@ -1463,6 +1463,67 @@ nmi_set		ld a,(show_cur+1)
 			pop af
 			out (c),a
 			ret
+INT0
+			ld	bc,#2003
+			ld	(txy51.cursor),bc
+			ld	hl,INT1
+			call txy51.txy
+			ld	bc,#3010
+			ld	(txy51.cursor),bc
+			ld	hl,INT2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,INT3
+			call txy51.txy
+						
+			ld hl, (fram_add+1)
+			
+			ld a,(max_cur+1)
+			ld e,a
+			ld a,(hl)
+			ld	bc,#30FA
+2			ld	(txy51.cursor),bc
+			rrca
+			push af
+			ld a, "0"
+			jr nc,1F
+			inc a
+1			
+			push bc
+			push hl
+			push de
+			call txy51.xy
+			pop de
+			pop hl
+			pop bc
+			ld a,8
+			add a,b
+			ld b,a
+			inc hl
+			pop af
+			dec e
+			jr nz, 2B
+			xor a
+			ret
+
+int_set		ld a,(show_cur+1)
+			inc a
+			ld b,a
+			ld a,%10000000
+1			rlc a
+			djnz 1B
+			ld hl, (fram_add+1)
+			xor (hl)
+			ld (hl),a
+			push af
+			ld bc, ZXi_port0
+			ld a,#2F	//ZXi register
+			out (c),a
+			inc b
+			pop af
+			out (c),a
+			ret			
 DMA0
 			ld	bc,#2003
 			ld	(txy51.cursor),bc
@@ -1471,6 +1532,10 @@ DMA0
 			ld	bc,#3010
 			ld	(txy51.cursor),bc
 			ld	hl,DMA2
+			call txy51.txy
+			ld	bc,#3810
+			ld	(txy51.cursor),bc
+			ld	hl,DMA3
 			call txy51.txy
 						
 			ld hl, (fram_add+1)
@@ -1679,9 +1744,13 @@ DEBUG0		ld	bc,#2003
 			call txy51.txy
 			ld	bc,#4810
 			ld	(txy51.cursor),bc
-			ld	hl,DEBUG4
+			ld	hl,DEBUG32
 			call txy51.txy
 			ld	bc,#5010
+			ld	(txy51.cursor),bc
+			ld	hl,DEBUG4
+			call txy51.txy
+			ld	bc,#5810
 			ld	(txy51.cursor),bc
 			ld	hl,DEBUG5
 			call txy51.txy
@@ -1715,7 +1784,7 @@ debug_set	ld hl,debug_VAL
 
 			ret
 		
-debug_VAL	db 0,1,2,#FE,#FF
+debug_VAL	db 0,1,2,4,#FE,#FF
 
 
 JOY			ld	bc,#2003
@@ -1821,7 +1890,7 @@ uart_set	ld hl,uart_VAL
 uart_VAL	db 0,1,2,3		
 
 
-reg_number  equ 24
+reg_number  equ 25
 REG_TAB
 			dw STARTUP
 			db 0,4
@@ -1842,6 +1911,16 @@ REG_TAB
 			db 1,6
 			dw audio_set
 			dw #2001 //FRAM address
+			
+			dw TSFM
+			db 1,3
+			dw tsfm_set
+			dw #2018 
+		
+			dw SID
+			db 1,2
+			dw sid_set
+			dw #2019 
 
 			dw JOY
 			db 0,2
@@ -1852,6 +1931,11 @@ REG_TAB
 			db 0,4
 			dw mice_set
 			dw #2011 
+			
+			dw EXTS0
+			db 0,4
+			dw exts_set
+			dw #2020 
 
 			dw DVT
 			db 1,1
@@ -1861,17 +1945,7 @@ REG_TAB
 			dw DVU
 			db 1,3
 			dw dvu_set
-			dw #200D
-
-			dw TSFM
-			db 1,3
-			dw tsfm_set
-			dw #2018 
-			
-			dw SID
-			db 1,2
-			dw sid_set
-			dw #2019 			
+			dw #200D	
 			
 			dw DVE
 			db 0,4
@@ -1888,20 +1962,10 @@ REG_TAB
 			dw dvo_set
 			dw #200A 	
 			
-			dw EXTS0
-			db 0,4
-			dw exts_set
-			dw #2020 
-			
 			dw MMC
 			db 1,1
 			dw mmc_set
 			dw #2006 
-
-			dw DMA0
-			db 1,1
-			dw dma_set
-			dw #2012 
 
 			dw ZCSD
 			db 0,3
@@ -1923,10 +1987,20 @@ REG_TAB
 			dw uart_set
 			dw #2039 
 
+			dw DMA0
+			db 1,2
+			dw dma_set
+			dw #2012 
+			
 			dw NMI0
 			db 1,1
 			dw nmi_set
-			dw #2012 
+			dw #202E 
+
+			dw INT0
+			db 1,2
+			dw nmi_set
+			dw #202F
 
 			dw CROM
 			db 0,#B
@@ -1939,7 +2013,7 @@ REG_TAB
 			dw #2040 
 
 			dw DEBUG0
-			db 0,5
+			db 0,6
 			dw debug_set
 			dw #203F 
 
@@ -1978,7 +2052,7 @@ zxi_00E		db #00	//reserved
 zxi_00F		db #00	//Video ScanLine - disabled
 zxi_010		db #00	//Custom Rom - disabled
 zxi_011		db #01	//Kempston Mouse
-zxi_012		db #01	//DMA
+zxi_012		db #03	//DMA
 zxi_013		db #00	//reserved
 zxi_014		db #00	//reserved
 zxi_015		db #00	//reserved
@@ -2007,7 +2081,7 @@ zxi_02B		db #00
 zxi_02C		db #00	//Z-Controller
 zxi_02D		db #01	//divSD
 zxi_02E		db #00	//SafeNMI
-zxi_02F		db #00
+zxi_02F		db #03	//INT
 zxi_030		db #00
 zxi_031		db #00
 zxi_032		db #00
@@ -2047,7 +2121,7 @@ SELECT		db 16,66,0
 			dc " "		
 DESELECT	dc "  "			
 
-STARTUP1	db 16,67,"Reset StartUp order"
+STARTUP1	db 16,67,"Start-up (power on & reset)"
 			dc " "
 STARTUP2	db 16,7,"Firmware full boot"
 			dc " "
@@ -2122,7 +2196,7 @@ JOY2		db 16,7,"none (disabled)"
 JOY3		db 16,7,"Kempston "
 			dc " "
 
-DV1			db 16,67,"Video Timing "
+DV1			db 16,67,"Video timing (ZX machine)"
 			dc " "
 DV2			db 16,7,"ZX Spectrum 48"
 			dc " "
@@ -2139,7 +2213,7 @@ DV52		db 16,7,"Pentagon on 3.5000MHz"
 DV53		db 16,7,"Karabas 128"
 			dc " "							
 
-DVO1		db 16,67,"Digital Video Output "
+DVO1		db 16,67,"Digital video output "
 			dc " "
 DVO2		db 16,7,"enable legacy DVI"
 			dc " "
@@ -2148,7 +2222,7 @@ DVO3		db 16,7,"enable ULTIMATE synchron. - only for some TV"
 DVO4		db 16,7,"HotPlug detection disable (TV/Monitor signal)"
 			dc " "
 
-DVE1		db 16,67,"GigaScreen - old TV/Monitor sum colors effect"
+DVE1		db 16,67,"GigaScreen - colours sum effect"
 			dc " "
 DVE2		db 16,7,"none (disabled)"
 			dc " "
@@ -2161,7 +2235,7 @@ DVE5		db 16,7,"GigaScreen mode2: autodetect mode1"
 DVE6		db 16,7,"GigaScreen mode3: KeyLayer"
 			dc " "			
 
-DVT1		db 16,67,"TIMEX graphics modes"
+DVT1		db 16,67,"Timex graphics"
 			dc " "
 DVT2		db 16,7,"enable TIMEX gfx modes"
 			dc " "
@@ -2175,7 +2249,7 @@ DVU3		db 16,7,"enable TIMEX mode select by ULAplus regs"
 DVU4		db 16,7,"enable SLAM+ slow ports (not implemented)"	
 			dc " "	
 
-DVP1		db 16,67,"Scan line (old CRT/TV) effect"
+DVP1		db 16,67,"Scanline (old CRT/TV) effect"
 			dc " "
 DVP2		db 16,7,"none (disabled)"
 			dc " "
@@ -2193,31 +2267,6 @@ DVP8		db 16,7,"1/64"
 			dc " "
 DVP9		db 16,7,"1/128"	
 			dc " "																			
-
-CROM1		db 16,67,"Custom ROMs"
-			dc " "
-CROM2		db 16,7,"none (disabled)"
-			dc " "			
-CROM3		db 16,7,"Crom0   (16KB mode)"
-			dc " "
-CROM4		db 16,7,"Crom1   (16KB mode)"
-			dc " "
-CROM5		db 16,7,"Crom2   (16KB mode)"
-			dc " "
-CROM6		db 16,7,"Crom3   (16KB mode)"
-			dc " "
-CROM7		db 16,7,"Crom4   (16KB mode)"
-			dc " "
-CROM8		db 16,7,"Crom5   (16KB mode)"
-			dc " "
-CROM9		db 16,7,"Crom6   (16KB mode)"
-			dc " "
-CROMA		db 16,7,"Crom7   (16KB mode)"
-			dc " "
-CROMB		db 16,7,"Crom0-3 (64KB mode)"
-			dc " "
-CROMC		db 16,7,"Crom4-7 (64KB mode)"
-			dc " "
 
 MICE1		db 16,67,"Mouse/Keyboard"
 			dc " "
@@ -2248,15 +2297,24 @@ DIVSD3		db 16,7,"swap order first/second SD"
 
 DMA1		db 16,67,"DMA"
 			dc " "
-DMA2		db 16,7,"enable"
+DMA2		db 16,7,"enable MB03+ DMA"
 			dc " "		
+DMA3		db 16,7,"enable detection other DMA e.g. in eLeMeNt ZX"
+			dc " "	
 
 NMI1		db 16,67,"SafeNMI (don't enable with eLeMeNt ZX)"
 			dc " "
 NMI2		db 16,7,"enable"
 			dc " "	
 
-EXTS1		db 16,67,"EXTRA button function"
+INT1		db 16,67,"Interrupt"
+			dc " "
+INT2		db 16,7,"enable SaveINT (don't use it with eLeMeNt ZX)"
+			dc " "				
+INT3		db 16,7,"enable HGFX Interrupt generation"
+			dc " "	
+
+EXTS1		db 16,67,"EXTRA button"
 			dc " "	
 EXTS2		db 16,7,"none (disabled)"
 			dc " "		
@@ -2267,7 +2325,7 @@ EXTS4		db 16,7,"LED Matrix mode"
 EXTS5		db 16,7,"GigaScreen"
 			dc " "					
 
-ZONE1		db 16,67,"RTC Time Zone"
+ZONE1		db 16,67,"RTC time zone"
 			dc " "	
 ZONE2		db 16,7,"GMT+0 (Canary Island)"
 			dc " "		
@@ -2298,36 +2356,35 @@ ZONEE		db 16,7,"GMT-2"
 ZONEF		db 16,7,"GMT-1 (Azores)"
 			dc " "	
 
-DEBUG1		db 16,67,"Diagnostic"
+DEBUG1		db 16,67,"Diagnostics"
 			dc " "
 DEBUG2		db 16,7,"none "
 			dc " "		
 DEBUG3		db 16,7,"Video sync."
 			dc " "	
 DEBUG31		db 16,7,"Audio level"
-			dc " "			
+			dc " "
+DEBUG32		db 16,7,"Status info"
+			dc " "				
 DEBUG4		db 16,7,"Video Test Text Pattern"
 			dc " "
 DEBUG5		db 16,7,"Video Test Colour Moving Pattern"
 			dc " "	
 
-ESP1		db 16,67,"UART(Wi-Fi) general setting"
+ESP1		db 16,67,"UART (Wi-Fi)"
 			dc " "
 ESP2		db 16,7,"enable"
 			dc " "
 ESP3		db 16,7,"set lower RF power of Wi-Fi"
 			dc " "	
 
-UART1		db 16,67,"UART(Wi-Fi) mode"
+UART1		db 16,67,"UART (Wi-Fi) type"
 			dc " "
 UART2		db 16,7,"internal USB-UART - microUSB"
 			dc " "		
 UART3		db 16,7,"WiFi - ESP01 module"
 			dc " "	
-		
-			
-																				
-
+							
 ; --------------- L I B R A R I E S ---------------------------------------	
 	
 //INCLUDE "nasobeniHLDE.a80"
@@ -2360,7 +2417,33 @@ DATE		db 16,0
 	ENDLUA
 	dc " " 
 		//block 8 // kompenzace delky souboru kvuli os.date
-		
+
+
+CROM1		db 16,67,"Custom ROMs"
+			dc " "
+CROM2		db 16,7,"none (disabled)"
+			dc " "			
+CROM3		db 16,7,"cROM0   (16KB mode)                            "
+			dc " "
+CROM4		db 16,7,"cROM1   (16KB mode)                            "
+			dc " "
+CROM5		db 16,7,"cROM2   (16KB mode)                            "
+			dc " "
+CROM6		db 16,7,"cROM3   (16KB mode)                            "
+			dc " "
+CROM7		db 16,7,"cROM4   (16KB mode)                            "
+			dc " "
+CROM8		db 16,7,"cROM5   (16KB mode)                            "
+			dc " "
+CROM9		db 16,7,"cROM6   (16KB mode)                            "
+			dc " "
+CROMA		db 16,7,"cROM7   (16KB mode)                            "
+			dc " "
+CROMB		db 16,7,"cROM0-3 (64KB mode)                            "
+			dc " "
+CROMC		db 16,7,"cROM4-7 (64KB mode)                            "
+			dc " "			
+											
 endramcode	
 
 CODE	=	#AF
