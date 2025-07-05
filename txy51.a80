@@ -7,7 +7,10 @@
 ;DEMO:napiste:asm,dbg,rpp,g
 //Original by BusySoft
 	MODULE txy51
-txy	 	 ld   a,(hl)
+txy	 	 
+//		or a
+//		ret z
+		ld   a,(hl)
          and  127
 /*         cp   13
          jr   z,T42_ZMEN */
@@ -30,6 +33,7 @@ T42_BACK ld   a,(hl)
 colorchange
 			inc hl
 			ld a,(hl)
+			and 127  //bez flash, bit7 je pro konec
 			ld (T42_ATT),a
 			jr T42_BACK	
 T42_ATT		defb 0	
@@ -118,11 +122,11 @@ xy8cc	rr	d
 	dec	a
 	jr	nz,xy8cc
 xy8bb	ld	a,d
-	or	(hl)
+xyor1	or	(hl)
 	ld	(hl),a
 	inc	hl
 	ld	a,e
-	or	(hl)
+xyor2	or	(hl)
 	ld	(hl),a
 	inc	b
 	inc	iy

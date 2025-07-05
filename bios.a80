@@ -715,11 +715,9 @@ dv_set		ld hl,DV_VAL
 			ld a, (HL)
 			push af
 			ld hl, (fram_add+1)
-			bit 7,a
-			jr nz, 1F //don't save
 			ld (hl),a
 1			ld bc, ZXi_port0
-			ld a,9
+			ld a,#09
 			out (c),a
 			inc b
 			pop af
@@ -727,7 +725,7 @@ dv_set		ld hl,DV_VAL
 
 			ret
 						
-DV_VAL		db 0,1,2,3,4,5,6,#FE,#FF			
+DV_VAL		db 0,1,2,3,4,5,6,7			
 
 DVO
 			ld	bc,#2003
