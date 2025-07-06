@@ -1,3 +1,3 @@
 sjasmplus bios.a80 --lst=bit.lst --lstlab   
-start c:\LnxSpectrum\LnxSpectrum.exe bios.sna
+start c:\LnxSpectrum\LnxSpectrum.exe setup.sna
 timeout 10

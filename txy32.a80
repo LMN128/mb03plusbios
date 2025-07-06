@@ -33,7 +33,7 @@ xy	and	a
 	ret	z
 	exx
 	ld	bc,(cursor)
-xy8	ld	de,bios.txy51.znaky
+xy8	ld	de,setup.txy51.znaky
 	ld	h,#00
 	ld	l,a
 	add	hl,hl

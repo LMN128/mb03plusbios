@@ -1,6 +1,6 @@
-	MODULE 	bios
+	MODULE 	setup
 	DEVICE 	ZXSPECTRUM48
-	OUTPUT	bios.cde
+	OUTPUT	setup.cde
 	
 ;███████████████ V A R I A B L E S ██████████████████████████████████████		
 DMA 		equ #0B
@@ -21,7 +21,7 @@ g_ZXi_port1	equ #7D3B
 			org 49152		
 maincode
 			DISP 0
-bios		di
+setup		di
 			ld sp,0
 			im 1
 			xor	a
@@ -2465,9 +2465,9 @@ linlen	=	$-linzac
 baslen	=	$-baszac
 	
 		
-	savesna  "bios.sna",ramcode
-	EMPTYTAP "bios.tap"
-	SAVETAP  "bios.tap" , BASIC, bios , baszac,baslen,1
-	SAVETAP  "bios.tap",CODE,"bios",maincode,endramcode-maincode,maincode
+	savesna  "setup.sna",ramcode
+	EMPTYTAP "setup.tap"
+	SAVETAP  "setup.tap" , BASIC, setup , baszac,baslen,1
+	SAVETAP  "setup.tap",CODE,"setup",maincode,endramcode-maincode,maincode
 	ENDMODULE
 		
