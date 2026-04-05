@@ -1705,7 +1705,7 @@ ZONE0		ld	bc,#2003
 			ld a,(max_cur+1)
 			ld b,a
 			ex af,af'
-			ld hl,exts_VAL
+			ld hl,zone_VAL
 			call cur_num
 			ret
 
